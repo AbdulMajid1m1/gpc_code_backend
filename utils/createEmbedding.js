@@ -1,17 +1,16 @@
 
 import axios from 'axios';
+import { OPENAI_API_KEY } from '../config/config';
 export async function getTextEmbedding(text) {
     // Define the OpenAI API url and key.
     const url = 'https://api.openai.com/v1/embeddings';
-    // const openai_key = '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';
-    const openai_key = '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';
     // Make the API call
     let response = await axios.post(url, {
         input: text,
         model: "text-embedding-ada-002"
     }, {
         headers: {
-            'Authorization': `Bearer ${openai_key}`,
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
             'Content-Type': 'application/json'
         }
     });
@@ -50,7 +49,6 @@ export async function getTextEmbedding(text) {
 
 export async function getBulkTextEmbeddings(texts) {
     const url = 'https://api.openai.com/v1/embeddings';
-    const openai_key = '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';
 
     // Validate that texts array is not empty and does not contain empty strings
     if (!texts || !Array.isArray(texts) || texts.length === 0 || texts.some(text => !text)) {
@@ -64,7 +62,7 @@ export async function getBulkTextEmbeddings(texts) {
         encoding_format: "float"  // Optional, can be either "float" or "base64"
     }, {
         headers: {
-            'Authorization': `Bearer ${openai_key}`,
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
             'Content-Type': 'application/json'
         }
     });
