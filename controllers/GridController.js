@@ -28,6 +28,15 @@ export const createGrid = async (req, res) => {
     }
 };
 
+// async function deleteAllRecords() {
+//     try {
+//         // Use the .deleteMany() method to delete all records
+//         const deleteResult = await GridModel.deleteMany({});
+//         console.log(`Deleted ${deleteResult.deletedCount} records.`);
+//     } catch (error) {
+//         console.error('Error deleting records:', error);
+//     }
+// }
 export const searchSimilarGrid = async (req, res) => {
     try {
         const queryItemEnglishName = req.query.item;
