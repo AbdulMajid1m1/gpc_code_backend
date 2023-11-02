@@ -124,34 +124,43 @@ export const searchSimilarSchemas = async (req, res) => {
 // };
 
 // Bulk insert and process CSV records
-export const bulkInsertSchemas = async (req, res) => {
-    const upload = multer({ dest: 'temp/' }).single('file');
-    upload(req, res, async (err) => {
-        if (err) {
-            return res.status(400).json({ message: err.message });
-        }
 
-        let results = [];
-        const batchSize = 500; // Number of records to process in a batch
-        const stream = fs.createReadStream(req.file.path).pipe(csvParser());
-
-        for await (const record of stream) {
-            results.push(record);
-
-            if (results.length >= batchSize) {
-                await insertBatch(results);
-                results = [];
-            }
-        }
-
-        if (results.length > 0) {
-            await insertBatch(results);
-        }
-
-        fs.unlinkSync(req.file.path);
-        res.status(200).json({ message: 'Data imported successfully.' });
-    });
+export const countSchemas = async (req, res) => {
+    try {
+        const count = await SchemaModel.countDocuments();
+        res.status(200).json({ count });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
+// export const bulkInsertSchemas = async (req, res) => {
+//     const upload = multer({ dest: 'temp/' }).single('file');
+//     upload(req, res, async (err) => {
+//         if (err) {
+//             return res.status(400).json({ message: err.message });
+//         }
+
+//         let results = [];
+//         const batchSize = 500; // Number of records to process in a batch
+//         const stream = fs.createReadStream(req.file.path).pipe(csvParser());
+
+//         for await (const record of stream) {
+//             results.push(record);
+
+//             if (results.length >= batchSize) {
+//                 await insertBatch(results);
+//                 results = [];
+//             }
+//         }
+
+//         if (results.length > 0) {
+//             await insertBatch(results);
+//         }
+
+//         fs.unlinkSync(req.file.path);
+//         res.status(200).json({ message: 'Data imported successfully.' });
+//     });
+// };
 
 // Batch processing and insert into MongoDB
 async function insertBatch(records) {
@@ -163,4 +172,66 @@ async function insertBatch(records) {
     });
 
     await SchemaModel.insertMany(records);
+}
+
+
+
+export const bulkInsertSchemas = async (req, res) => {
+    const upload = multer({ dest: 'temp/' }).single('file');
+    upload(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ message: err.message });
+        }
+
+        const filePath = req.file.path;
+        let allRecords = await readCSV(filePath);
+        const batchSize = 500;
+        
+        while (allRecords.length > 0) {
+            let batch = allRecords.slice(0, batchSize);
+            await processBatch(batch);
+            allRecords = allRecords.slice(batchSize); // Remove processed batch
+            await writeCSV(filePath, allRecords); // Rewrite the remaining records
+        }
+
+        res.status(200).json({ message: 'Data imported successfully.' });
+    });
+};
+
+async function processBatch(records) {
+    try {
+        await insertBatch(records);
+        // Implement a delay if necessary for API rate limits
+    } catch (error) {
+        console.error("Error in processing batch: ", error);
+        // Handle or log error appropriately
+    }
+}
+
+
+
+
+async function readCSV(filePath) {
+    return new Promise((resolve, reject) => {
+        const results = [];
+        const stream = fs.createReadStream(filePath).pipe(csvParser());
+
+        stream.on('data', (record) => {
+            results.push(record);
+        });
+
+        stream.on('end', () => {
+            resolve(results);
+        });
+
+        stream.on('error', (error) => {
+            reject(error);
+        });
+    });
+}
+
+async function writeCSV(filePath, records) {
+    const header = Object.keys(records[0]).join(',') + '\n'; // Assuming all records have the same structure
+    const csvData = records.map(record => Object.values(record).join(',')).join('\n');
+    fs.writeFileSync(filePath, header + csvData);
 }

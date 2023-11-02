@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { OPENAI_API_KEY } from '../config/config';
+import { OPENAI_API_KEY } from '../config/config.js';
 export async function getTextEmbedding(text) {
     // Define the OpenAI API url and key.
     const url = 'https://api.openai.com/v1/embeddings';
