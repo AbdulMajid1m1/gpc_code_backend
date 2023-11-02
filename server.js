@@ -16,10 +16,58 @@ dotenv.config();
 
 mongoose.set("strictQuery", true);
 
+// const connect = async () => {
+//     try {
+//         await mongoose.connect(process.env.MONGO);
+//         console.log("Connected to mongoDB!");
+//     } catch (error) {
+//         console.log(error);
+//     }
+// };
+// const connect = async () => {
+//     try {
+//         await mongoose.connect(process.env.MONGO);
+//         console.log("Connected to mongoDB!");
+
+//         // Place the index creation logic here
+//         const collection = mongoose.connection.collection('HsCodes'); // Replace 'HsCodes' with your actual collection name
+
+//         const indexDefinition = {
+//             "mappings": {
+//                 "dynamic": true,
+//                 "fields": {
+//                     "DescriptionENEmbedding": {
+//                         "dimensions": 1536,
+//                         "similarity": "cosine",
+//                         "type": "knnVector"
+//                     }
+//                 }
+//             }
+//         };
+
+//         // Checking if the index exists is optional as MongoDB will not create a duplicate
+//         await collection.createIndex(indexDefinition);
+//         console.log("Search index created/verified");
+
+//     } catch (error) {
+//         console.log(error);
+//     }
+// };
 const connect = async () => {
     try {
         await mongoose.connect(process.env.MONGO);
-        console.log("Connected to mongoDB!");
+        console.log("Connected to MongoDB!");
+
+        const collection = mongoose.connection.collection('HsCodes'); // Replace 'HsCodes' with your actual collection name
+
+        const indexDefinition = {
+            "BrickAttributeTitleEmbedding": "text" // Assuming "text" index type for searching
+        };
+
+        // Create the vector search index using MongoDB Atlas Search
+        await collection.createIndex(indexDefinition);
+
+        console.log("Vector search index created/verified");
     } catch (error) {
         console.log(error);
     }

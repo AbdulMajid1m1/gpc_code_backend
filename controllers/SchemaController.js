@@ -36,6 +36,7 @@ export const createSchema = async (req, res) => {
 // }
 
 
+
 export const searchSimilarSchemas = async (req, res) => {
 
     try {
@@ -125,14 +126,32 @@ export const searchSimilarSchemas = async (req, res) => {
 
 // Bulk insert and process CSV records
 
+// export const countSchemas = async (req, res) => {
+//     try {
+//         const count = await SchemaModel.countDocuments();
+//         res.status(200).json({ count });
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// };
+
 export const countSchemas = async (req, res) => {
     try {
-        const count = await SchemaModel.countDocuments();
-        res.status(200).json({ count });
+        const stats = await SchemaModel.collection.stats();
+        const collectionSize = stats.size; // size in bytes
+        const storageSize = stats.storageSize; // storage size in bytes
+
+        res.status(200).json({
+            collectionSize,
+            storageSize
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+
 // export const bulkInsertSchemas = async (req, res) => {
 //     const upload = multer({ dest: 'temp/' }).single('file');
 //     upload(req, res, async (err) => {
@@ -186,7 +205,7 @@ export const bulkInsertSchemas = async (req, res) => {
         const filePath = req.file.path;
         let allRecords = await readCSV(filePath);
         const batchSize = 500;
-        
+
         while (allRecords.length > 0) {
             let batch = allRecords.slice(0, batchSize);
             await processBatch(batch);
@@ -231,7 +250,11 @@ async function readCSV(filePath) {
 }
 
 async function writeCSV(filePath, records) {
-    const header = Object.keys(records[0]).join(',') + '\n'; // Assuming all records have the same structure
+    if (records.length === 0 || !records[0]) {
+        console.log('No records to write.');
+        return;
+    }
+    const header = Object.keys(records[0]).join(',') + '\n';
     const csvData = records.map(record => Object.values(record).join(',')).join('\n');
     fs.writeFileSync(filePath, header + csvData);
 }

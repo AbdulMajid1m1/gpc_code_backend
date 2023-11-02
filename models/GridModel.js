@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 const GridSchema = new mongoose.Schema({
-    HarmonizedCode: { type: String, required: true },
+    HarmonizedCode: { type: String },
     ItemArabicName: String,
     ItemEnglishName: String,
     DutyRate: String,
