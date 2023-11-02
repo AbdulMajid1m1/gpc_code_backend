@@ -100,15 +100,15 @@ async function writeCSV(filePath, records) {
 // Function to insert a batch into MongoDB
 async function insertBatch(records) {
     // Here we are assuming that ItemEnglishName is the text to get embeddings for
-    // const texts = records.map(record => record.ItemEnglishName);
-    // const embeddings = await getBulkTextEmbeddings(texts);
+    const texts = records.map(record => record.ItemEnglishName);
+    const embeddings = await getBulkTextEmbeddings(texts);
 
-    // const processedRecords = records.map((record, index) => ({
-    //     ...record,
-  
-    // }));
+    const processedRecords = records.map((record, index) => ({
+        ...record,
+        ItemEnglishNameEmbedding: embeddings[index]
+    }));
 
-    await GridModel.insertMany(records);
+    await GridModel.insertMany(processedRecords);
 }
 
 // Function to process each batch
