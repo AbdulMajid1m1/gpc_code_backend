@@ -37,6 +37,8 @@ export const createGrid = async (req, res) => {
 //         console.error('Error deleting records:', error);
 //     }
 // }
+
+
 export const searchSimilarGrid = async (req, res) => {
     try {
         const queryItemEnglishName = req.query.item;
@@ -98,15 +100,15 @@ async function writeCSV(filePath, records) {
 // Function to insert a batch into MongoDB
 async function insertBatch(records) {
     // Here we are assuming that ItemEnglishName is the text to get embeddings for
-    const texts = records.map(record => record.ItemEnglishName);
-    const embeddings = await getBulkTextEmbeddings(texts);
+    // const texts = records.map(record => record.ItemEnglishName);
+    // const embeddings = await getBulkTextEmbeddings(texts);
 
-    const processedRecords = records.map((record, index) => ({
-        ...record,
-        ItemEnglishNameEmbedding: embeddings[index]
-    }));
+    // const processedRecords = records.map((record, index) => ({
+    //     ...record,
+  
+    // }));
 
-    await GridModel.insertMany(processedRecords);
+    await GridModel.insertMany(records);
 }
 
 // Function to process each batch
